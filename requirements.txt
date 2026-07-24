@@ -1,0 +1,2 @@
+# Only needed for the real Claude backend (--real). Mock mode needs nothing.
+anthropic>=0.40
