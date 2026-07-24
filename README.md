@@ -1,7 +1,7 @@
 # Agentic Research Analyst
 
 A multi-agent AI system that answers questions by **planning, researching with
-tools, drafting a cited answer, and then fact-checking itself** — and ships a
+tools, drafting a cited answer, and then fact-checking itself** - and ships a
 benchmark that measures its own citation accuracy and hallucination rate.
 
 The headline isn't "it answers questions." It's *"it knows when it can't, and it
@@ -14,7 +14,7 @@ question ─▶ Planner ─▶ Researcher ─▶ Drafter ─▶ Verifier ─▶ 
 
 ## Runs free, no API key
 
-The whole pipeline — and the benchmark — runs on a built-in **mock backend**:
+The whole pipeline - and the benchmark - runs on a built-in **mock backend**:
 deterministic, offline, zero cost. Point it at Claude only when you want to.
 
 ```bash
@@ -31,7 +31,7 @@ to `.env`, add your `ANTHROPIC_API_KEY`, and pass `--real`.
 | Agent | Job | Why it matters |
 |---|---|---|
 | **Planner** | Splits a question into focused sub-questions | Turns one prompt into an agentic workflow |
-| **Researcher** | Answers each sub-question by calling tools (`search`, `calculator`) in a loop | The real tool-use loop — the "agentic" core |
+| **Researcher** | Answers each sub-question by calling tools (`search`, `calculator`) in a loop | The real tool-use loop - the "agentic" core |
 | **Drafter** | Combines findings into one answer with inline citations `[S1]` | Forces every claim to name its source |
 | **Verifier** | A *separate* agent re-reads each claim and checks it against its cited source | Independent fact-check → a measured trust score, not a promise |
 
@@ -41,7 +41,7 @@ this" is recorded as an honest **abstention**.
 
 ## Measured results (not vibes)
 
-From `python benchmark/run_benchmark.py` on the labeled dataset — every number
+From `python benchmark/run_benchmark.py` on the labeled dataset - every number
 computed against known ground truth:
 
 | Metric | Result |
@@ -52,7 +52,7 @@ computed against known ground truth:
 | **Avg. trust score** | **1.00** |
 
 The dataset includes a **trap** question whose answer isn't in the knowledge
-base ("What is the population of Mars?"). A trustworthy agent must *abstain* —
+base ("What is the population of Mars?"). A trustworthy agent must *abstain* -
 and this one does, which is exactly what keeps the hallucination rate at zero.
 
 ## Example output
@@ -82,7 +82,7 @@ The researcher is a genuine agent loop (same code in mock and real mode):
 3. Repeat until it returns a final, source-grounded finding.
 
 The `LLM` abstraction (`analyst/llm.py`) normalizes Claude's tool-use protocol
-and the mock into one interface — which is exactly why the agents are testable
+and the mock into one interface - which is exactly why the agents are testable
 offline. That seam is the most reusable idea in the project.
 
 ## Project structure
@@ -109,7 +109,7 @@ main.py                 runs an example query
 
 - **Break it:** add a corpus doc that contradicts another; watch the verifier's
   trust score react.
-- **Swap in real web search:** replace `tools.search` with a live search API —
+- **Swap in real web search:** replace `tools.search` with a live search API -
   the four agents don't change.
 - **Add a tool:** give the researcher a `wikipedia` or `unit_convert` tool and
   update the schema.
@@ -118,9 +118,9 @@ main.py                 runs an example query
 - **Grow the benchmark:** add adversarial and multi-hop questions and re-run the
   scorecard.
 
-## What this is — and isn't
+## What this is - and isn't
 
-- **Is:** a clear, runnable blueprint for trustworthy agentic AI — planning, tool
+- **Is:** a clear, runnable blueprint for trustworthy agentic AI - planning, tool
   loops, self-critique, and *measured* grounding.
 - **Isn't:** production infrastructure. The corpus is tiny, "search" is keyword
   overlap, and the mock backend is scripted so the pipeline is deterministic
