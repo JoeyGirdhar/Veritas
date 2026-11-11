@@ -1,15 +1,4 @@
-"""
-Verifier agent: the trust layer, and the whole point of this project.
-
-A separate agent (fresh context, no stake in the draft) re-reads the final answer
-one claim at a time and checks each claim against the source it cites. Claims a
-cited source doesn't actually support are flagged as UNSUPPORTED — that's a
-caught hallucination. An explicit "I could not find..." is recorded as an honest
-abstention, not a failure.
-
-Running verification as an independent pass is what lets the system report a
-*measured* trust score instead of just asserting "trust me."
-"""
+"""Verifier: checks each claim in the answer against its cited source."""
 
 import json
 
@@ -47,5 +36,5 @@ def verify(llm, answer: str, sources: list[dict]) -> dict:
         "num_supported": len(supported),
         "num_unsupported": len(unsupported),
         "num_abstentions": sum(1 for c in claims if c.get("abstention")),
-        "trust_score": round(trust, 3),   # fraction of factual claims that hold up
+        "trust_score": round(trust, 3),
     }

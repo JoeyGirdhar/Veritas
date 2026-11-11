@@ -1,18 +1,7 @@
-"""
-LLM abstraction with two interchangeable backends.
+"""LLM backends.
 
-    RealLLM  -> calls Claude via the official `anthropic` SDK (needs an API key).
-    MockLLM  -> returns deterministic, scripted responses (no key, no cost).
-
-Every agent in this project talks to an `LLM` through one method, `complete()`,
-which returns a normalized `LLMResult`. Because the mock speaks the same
-interface, the ENTIRE multi-agent pipeline -- and the benchmark -- runs offline
-and for free. Set a real key and the same code calls Claude instead.
-
-This is the seam that makes agentic code testable: the moment your agents depend
-on a narrow LLM interface rather than a concrete SDK, you can drive them with
-canned responses in tests and swap in the real model in production.
-"""
+RealLLM calls Claude through the Anthropic SDK. MockLLM returns scripted
+responses so the pipeline and tests run offline without an API key."""
 
 from __future__ import annotations
 
@@ -22,15 +11,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from .tools import TOOL_SCHEMAS  # noqa: F401  (re-exported for convenience)
+from .tools import TOOL_SCHEMAS
 
-# Default model. Override with AGENT_MODEL. For a cheaper run while learning,
-# try `claude-haiku-4-5` or `claude-sonnet-5`.
+# override with AGENT_MODEL, e.g. claude-haiku-4-5 for cheaper runs
 DEFAULT_MODEL = os.environ.get("AGENT_MODEL", "claude-opus-5")
 
-# The mock treats a search hit as usable only at/above this keyword-overlap score.
-# 1 = require at least one meaningful shared keyword. A query with zero overlap
-# (e.g. the corpus has nothing about it) still abstains rather than guessing.
+# min keyword overlap for the mock to count a search hit as a source
 MIN_SOURCE_SCORE = 1
 
 
@@ -45,8 +31,7 @@ class ToolCall:
 class LLMResult:
     text: str = ""
     tool_calls: list[ToolCall] = field(default_factory=list)
-    # The assistant turn to append to `messages` when continuing a tool loop.
-    # Real backend: the SDK's content blocks. Mock: equivalent dicts.
+    # assistant turn to append when continuing a tool loop
     assistant_content: Any = None
     stop_reason: str = "end_turn"
 
@@ -59,7 +44,7 @@ def extract_json(text: str) -> dict:
     start = text.find("{")
     if start == -1:
         return {}
-    # Walk braces to find the matching close, so trailing prose doesn't break parsing.
+    # match braces so trailing text doesn't break parsing
     depth = 0
     for i in range(start, len(text)):
         if text[i] == "{":
@@ -74,14 +59,12 @@ def extract_json(text: str) -> dict:
     return {}
 
 
-# ---------------------------------------------------------------------------
-# Real backend (Claude via the Anthropic SDK)
-# ---------------------------------------------------------------------------
+# Real backend
 
 class RealLLM:
     def __init__(self, model: str = DEFAULT_MODEL):
-        import anthropic  # imported lazily so mock mode needs no dependency
-        self.client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+        import anthropic
+        self.client = anthropic.Anthropic()
         self.model = model
 
     def complete(self, role, system, messages, tools=None, max_tokens=2048):
@@ -99,14 +82,12 @@ class RealLLM:
         return LLMResult(
             text="".join(text_parts),
             tool_calls=tool_calls,
-            assistant_content=resp.content,   # pass SDK blocks straight back into the loop
+            assistant_content=resp.content,
             stop_reason=resp.stop_reason or "end_turn",
         )
 
 
-# ---------------------------------------------------------------------------
-# Mock backend (deterministic; drives the whole pipeline with no API)
-# ---------------------------------------------------------------------------
+# Mock backend
 
 def _last_user_text(messages) -> str:
     for m in reversed(messages):
@@ -137,7 +118,6 @@ def _decompose(question: str) -> list[str]:
     parts = [p.strip(" ?.") for p in parts if len(p.strip(" ?.")) > 3]
     if len(parts) <= 1:
         return [q]
-    # Re-attach a question mark so each sub-question reads naturally.
     return [p if p.endswith("?") else p + "?" for p in parts]
 
 
@@ -154,7 +134,7 @@ class MockLLM:
         if role == "researcher":
             tool_result = _find_tool_result(messages)
             if tool_result is None:
-                # First step: decide to search. Emit a tool_use block.
+                # first turn: search
                 query = _last_user_text(messages)
                 call = ToolCall(id="call_1", name="search", input={"query": query})
                 assistant_content = [{
@@ -162,7 +142,7 @@ class MockLLM:
                 }]
                 return LLMResult(tool_calls=[call], assistant_content=assistant_content,
                                  stop_reason="tool_use")
-            # Second step: read the retrieved docs and report a grounded finding.
+            # second turn: report a finding from the top doc
             docs = json.loads(tool_result)
             if not docs or docs[0]["score"] < MIN_SOURCE_SCORE:
                 return LLMResult(text=json.dumps(
@@ -197,11 +177,9 @@ class MockLLM:
                     supported = _overlap(sentence, sources.get(label, "")) >= 1
                     claims.append({"text": sentence, "label": label, "supported": supported})
                 elif "could not find" in sentence.lower():
-                    # An explicit abstention is honest, not a hallucination.
                     claims.append({"text": sentence, "label": None, "supported": True,
                                    "abstention": True})
                 else:
-                    # A factual-looking claim with no citation is unsupported.
                     claims.append({"text": sentence, "label": None, "supported": False})
             return LLMResult(text=json.dumps({"claims": claims}))
 

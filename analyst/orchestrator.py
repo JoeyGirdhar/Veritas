@@ -1,16 +1,4 @@
-"""
-Orchestrator: run the full multi-agent pipeline for one question.
-
-    question
-      -> planner    : split into sub-questions
-      -> researcher : answer each with tools, collect grounded findings
-      -> drafter    : synthesize one cited answer
-      -> verifier   : check every claim against its source
-      -> Report      : answer + sources + per-claim verdicts + trust score
-
-Sources retrieved across sub-questions are assigned stable labels (S1, S2, ...)
-so the drafter can cite them and the verifier can look them up.
-"""
+"""Runs the pipeline for one question and returns a Report."""
 
 from dataclasses import dataclass, field
 
@@ -23,7 +11,7 @@ class Report:
     question: str
     subquestions: list
     answer: str
-    sources: list = field(default_factory=list)   # [{'label','id','title','text'}]
+    sources: list = field(default_factory=list)
     claims: list = field(default_factory=list)
     trust_score: float = 1.0
     num_unsupported: int = 0
@@ -40,7 +28,7 @@ def analyze(llm, question: str) -> Report:
     for sq in subquestions:
         finding = researcher.research(llm, sq)
 
-        # Assign a citation label to each retrieved doc the first time we see it.
+        # label each doc (S1, S2, ...) the first time it's seen
         label = None
         for doc_id in finding["source_ids"]:
             if doc_id in BY_ID:

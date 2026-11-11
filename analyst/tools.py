@@ -1,16 +1,4 @@
-"""
-Tools the researcher agent can call.
-
-Two tools, defined in the Anthropic tool-schema format so the real backend can
-hand them to Claude directly:
-
-    search      keyword search over the local corpus (returns ranked documents)
-    calculator  safe arithmetic on a numeric expression
-
-`dispatch()` executes a tool call and returns a STRING (the tool result the model
-reads back). Keeping tool results as strings mirrors how the real API feeds
-`tool_result` content back into the conversation.
-"""
+"""Researcher tools: corpus search and a safe calculator."""
 
 import ast
 import json
@@ -19,7 +7,6 @@ import re
 
 from .corpus import DOCUMENTS
 
-# ---- Tool schemas (what the model sees) -----------------------------------
 
 TOOL_SCHEMAS = [
     {
@@ -62,7 +49,7 @@ def search(query: str, k: int = 3) -> list[dict]:
     return scored[:k]
 
 
-# ---- Safe calculator (no eval of arbitrary code) ---------------------------
+# safe arithmetic eval (no builtins, no names)
 
 _OPS = {
     ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,

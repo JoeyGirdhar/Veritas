@@ -1,12 +1,4 @@
-"""
-Tests that run the whole agent offline on the mock backend -- no API key, no cost.
-
-They prove the two behaviors that matter:
-  1. A normal question is answered correctly, with a real citation.
-  2. The trap question (answer not in the corpus) is ABSTAINED, not hallucinated.
-
-Run:  python tests/test_pipeline.py     (or: pytest -q)
-"""
+"""End to end tests on the mock backend."""
 
 import os
 import sys

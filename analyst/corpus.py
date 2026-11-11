@@ -1,14 +1,4 @@
-"""
-A tiny local knowledge base.
-
-Using a fixed corpus (instead of live web search) is a deliberate choice for a
-learning + benchmarking project: because we know exactly what facts exist and
-where, we can measure the agent's citation accuracy and hallucination rate
-against ground truth. Swap this out for a real web-search tool and the rest of
-the pipeline is unchanged.
-
-Each document has a stable id, a title, and a one-fact body.
-"""
+"""Small local knowledge base used by search and the benchmark."""
 
 DOCUMENTS = [
     {"id": "D1", "title": "Eiffel Tower",

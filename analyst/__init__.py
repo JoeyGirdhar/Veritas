@@ -1,7 +1,4 @@
-"""
-Agentic research analyst: a multi-agent pipeline (planner -> researcher ->
-drafter -> verifier) that answers questions with cited, fact-checked output.
-"""
+"""Research pipeline: planner, researcher, drafter, verifier."""
 
 from .llm import get_llm
 from .orchestrator import analyze, Report

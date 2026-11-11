@@ -1,9 +1,4 @@
-"""
-Planner agent: break a question into answerable sub-questions.
-
-Decomposition is what turns a single prompt into an *agentic* workflow — each
-sub-question gets its own research pass, and the drafter recombines the findings.
-"""
+"""Planner: splits a question into sub-questions."""
 
 from .llm import extract_json
 

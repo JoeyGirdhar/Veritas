@@ -1,22 +1,6 @@
-"""
-Run the agent over the labeled dataset and print a scorecard.
+"""Run the pipeline over the benchmark set and print a scorecard.
 
-Metrics (all objective, computed against known ground truth):
-
-  Answer accuracy      correct answers / answerable questions
-                       (a trap counts correct only if the agent ABSTAINS)
-  Citation validity    fraction of [S#] citations that point to a real retrieved
-                       source AND to a doc that genuinely supports the question
-  Hallucination rate   fraction of questions where the agent stated an
-                       unsupported factual claim (the number you want near zero)
-  Avg. trust score     the verifier's own self-reported grounding, averaged
-
-Runs on the mock backend by default -> free, offline, deterministic. Pass
---real to use Claude (needs ANTHROPIC_API_KEY).
-
-    python benchmark/run_benchmark.py
-    python benchmark/run_benchmark.py --real
-"""
+Usage: python benchmark/run_benchmark.py [--real]"""
 
 import os
 import re
@@ -49,7 +33,6 @@ def main():
         answer = report.answer
         trust_scores.append(report.trust_score)
 
-        # --- Answer accuracy ---
         if item["trap"]:
             correct = _abstained(answer) and report.num_unsupported == 0
         else:
@@ -58,7 +41,7 @@ def main():
             if correct:
                 n_correct += 1
 
-        # --- Citation validity: does each [S#] map to a doc that truly supports this Q? ---
+        # a citation counts if it points at a doc that supports this question
         cited_labels = set(re.findall(r"\[(S\d+)\]", answer))
         label_to_docid = {s["label"]: s["id"] for s in report.sources}
         for label in cited_labels:
@@ -67,7 +50,6 @@ def main():
             if doc_id and doc_id in item["relevant_docs"]:
                 citations_valid += 1
 
-        # --- Hallucination: any unsupported factual claim the verifier flagged ---
         if report.num_unsupported > 0:
             n_hallucinated += 1
 

@@ -1,12 +1,6 @@
-"""
-Ask the agent one question and print the full, verified report.
+"""Ask one question and print the verified report.
 
-    python examples/run_query.py
-    python examples/run_query.py "What does photosynthesis produce?"
-    python examples/run_query.py --real "How tall is the Eiffel Tower?"
-
-Mock backend by default (free/offline). Pass --real to use Claude.
-"""
+Usage: python examples/run_query.py [--real] 'question'"""
 
 import os
 import sys

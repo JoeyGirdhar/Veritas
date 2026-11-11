@@ -1,17 +1,4 @@
-"""
-Researcher agent: answer one sub-question by USING TOOLS.
-
-This is the core agentic loop — the "tool loop" that makes this project more than
-a chatbot:
-
-    1. ask the model what to do
-    2. if it wants a tool, run the tool and feed the result back
-    3. repeat until it produces a final, grounded finding
-
-The loop is provider-agnostic: `llm.complete()` normalizes both the real Claude
-tool-use protocol and the mock into the same shape, so this exact code runs in
-both modes.
-"""
+"""Researcher: answers one sub-question with a tool-use loop."""
 
 from .llm import extract_json
 from .tools import TOOL_SCHEMAS, dispatch
@@ -41,7 +28,6 @@ def research(llm, subquestion: str) -> dict:
         )
 
         if result.tool_calls:
-            # Append the assistant's tool request, then run each tool and return results.
             messages.append({"role": "assistant", "content": result.assistant_content})
             tool_results = []
             for call in result.tool_calls:
@@ -54,7 +40,6 @@ def research(llm, subquestion: str) -> dict:
             messages.append({"role": "user", "content": tool_results})
             continue
 
-        # No tool call -> the model produced its final finding.
         data = extract_json(result.text)
         return {
             "subquestion": subquestion,
@@ -62,5 +47,4 @@ def research(llm, subquestion: str) -> dict:
             "source_ids": data.get("source_ids", []) or [],
         }
 
-    # Ran out of steps without a final answer.
     return {"subquestion": subquestion, "finding": "No supporting source found.", "source_ids": []}

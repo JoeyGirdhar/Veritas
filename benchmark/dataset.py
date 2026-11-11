@@ -1,14 +1,4 @@
-"""
-Benchmark dataset: questions with KNOWN answers, plus the corpus doc(s) that
-support each one. Because the ground truth is fixed, we can measure the agent's
-citation accuracy and hallucination rate objectively.
-
-Each item:
-  question         the input
-  expect           substrings that MUST appear in a correct answer ([] = should abstain)
-  relevant_docs    corpus ids that actually support the answer ([] = unanswerable)
-  trap             True when the answer is deliberately NOT in the corpus
-"""
+"""Benchmark questions with known answers and supporting doc ids."""
 
 DATASET = [
     {"question": "How tall is the Eiffel Tower and when was it completed?",
@@ -21,7 +11,7 @@ DATASET = [
      "expect": ["oxygen"], "relevant_docs": ["D5"], "trap": False},
     {"question": "How tall is the Eiffel Tower and how high is Mount Everest?",
      "expect": ["330", "8,849"], "relevant_docs": ["D1", "D3"], "trap": False},
-    # Trap: the corpus has nothing about this. A trustworthy agent abstains.
+    # not in the corpus, so the agent should abstain
     {"question": "What is the population of Mars?",
      "expect": [], "relevant_docs": [], "trap": True},
 ]

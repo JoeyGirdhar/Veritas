@@ -1,11 +1,4 @@
-"""
-Drafter agent: combine the per-sub-question findings into one answer with
-inline citations like [S1], [S2].
-
-The drafter is told to cite the source label attached to each finding and to
-abstain (rather than invent) when a finding has no supporting source. That
-"abstain instead of guess" instruction is what the verifier later checks.
-"""
+"""Drafter: writes a cited answer from the research findings."""
 
 import json
 
